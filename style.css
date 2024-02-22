@@ -1,0 +1,44 @@
+body {
+  background: pink;
+  height: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Helvetica";
+}
+
+.container {
+  background: red;
+}
+
+.scores {
+  color: aliceblue;
+  font-size: 1.2 rem;
+  font-weight: 400;
+  padding: 20px 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.snakeGrid {
+  width: 400px;
+  height: 400px;
+  border: 1px solid red;
+  margin: 40px auto;
+  display: grid;
+  grid-template: repeat(30, 1fr) / repeat(30, 1fr);
+  background: white;
+}
+
+.snakeGrid .food {
+  background: lightsalmon;
+}
+
+.snakeGrid .snakeHead {
+  background: lightseagreen;
+}
