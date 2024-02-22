@@ -42,3 +42,7 @@ body {
 .snakeGrid .snakeHead {
   background: lightseagreen;
 }
+
+.snakeGrid .snakeBody {
+  background: red;
+}
