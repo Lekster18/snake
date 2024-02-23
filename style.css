@@ -39,6 +39,10 @@ body {
   background: lightsalmon;
 }
 
+.snakeGrid .door {
+  background: blueviolet;
+}
+
 .snakeGrid .snakeHead {
   background: lightseagreen;
 }
