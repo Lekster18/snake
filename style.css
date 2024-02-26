@@ -1,5 +1,5 @@
 body {
-  background: pink;
+  background: #0b1354;
   height: 100%;
   margin: 0;
   text-align: center;
@@ -12,8 +12,14 @@ body {
   font-family: "Helvetica";
 }
 
+h1 {
+  color: #ffa4b6;
+  padding: 40px;
+  font-size: 4rem;
+}
+
 .container {
-  background: red;
+  background: #a15889;
 }
 
 .scores {
@@ -32,7 +38,7 @@ body {
   margin: 40px auto;
   display: grid;
   grid-template: repeat(30, 1fr) / repeat(30, 1fr);
-  background: white;
+  background: #f765b3;
 }
 
 .snakeGrid .food {
@@ -49,4 +55,8 @@ body {
 
 .snakeGrid .snakeBody {
   background: red;
+}
+
+.snakeGrid .enemySnake {
+  background: white;
 }
