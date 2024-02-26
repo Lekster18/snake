@@ -28,8 +28,12 @@ h1 {
   font-weight: 400;
   padding: 20px 15px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
 }
+
+/* .scoreDisplay {
+  margin-left: 40px;
+} */
 
 .snakeGrid {
   width: 400px;
@@ -59,4 +63,8 @@ h1 {
 
 .snakeGrid .enemySnake {
   background: white;
+}
+
+.snakeGrid .enemySnakeBody {
+  background: blue;
 }

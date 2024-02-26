@@ -3,8 +3,9 @@
 const snakeGrid = document.querySelector(".snakeGrid");
 
 const doorThreshold = 0;
-const enemyThreshold = 1;
+const enemyThreshold = 4;
 const gridSize = 30;
+const snakeChangeDirectionProbability = 0.2;
 
 let foodX, foodY;
 let doorA_X, doorA_Y;
@@ -14,10 +15,20 @@ let snakeX = 5,
 let snakeBody = [];
 let velocityX = 0,
   velocityY = 0;
+let direction = [
+  [0, -1],
+  [1, 0],
+  [0, 1],
+  [-1, 0],
+];
 let gameOver = false;
 let setIntervalId;
 let score = 0;
 let highScore = localStorage.getItem("highScore");
+let enemySnakeX, enemySnakeY;
+let enemySnakeBody = [];
+let enemyVelocityX = 0;
+let enemyVelocityY = 0;
 
 // This method checks whether the given coordinates collide with the snake
 const checkSnakeLocation = (x, y) => {
@@ -120,20 +131,113 @@ const updateSnakeLocation = () => {
   }
 };
 
-// This method handles what happen when snake eats
-const eatFood = () => {
-  // Update Score
-  score += 1;
+const addScore = (scoreAdd) => {
+  score += scoreAdd;
   document.querySelector(".scoreDisplay").textContent = "Score: " + score;
+
   if (score > highScore) {
     updateHighScore();
   }
+};
 
-  // Recreate Food
-  randomizedFood();
+// This method handles what happen when snake eats
+const eatFood = () => {
+  // Update Score
+  addScore(1);
 
   // Add Body
   snakeBody.push([foodX, foodY]);
+  // Recreate Food
+  randomizedFood();
+};
+
+/*
+  ENEMY SNAKE METHODS
+*/
+
+// This method updates the location of the enemy snake
+const updateEnemySnakeLocation = () => {
+  for (let i = enemySnakeBody.length - 1; i > 0; i--) {
+    enemySnakeBody[i] = enemySnakeBody[i - 1];
+  }
+
+  if (enemySnakeBody.length >= 1) {
+    enemySnakeBody[0] = [enemySnakeX, enemySnakeY];
+  }
+};
+
+// This method checks what direction should the enemy move
+const enemyChangeDirection = (retry = 0) => {
+  // Hackish way to ensure that snake eat itself and doesn't cause exception
+  if (retry > 2000) {
+    spawnEnemy();
+  }
+  let nextVelocity = direction[Math.floor(Math.random() * 4)];
+  if (Math.random() > snakeChangeDirectionProbability) {
+    nextVelocity = [enemyVelocityX, enemyVelocityY];
+  }
+  // Make sure enemy snake dont enter edges of map
+  if (
+    enemySnakeX + nextVelocity[0] > 30 ||
+    enemySnakeY + nextVelocity[1] > 30 ||
+    enemySnakeX + nextVelocity[0] < 1 ||
+    enemySnakeY + nextVelocity[1] < 1
+  ) {
+    return enemyChangeDirection(retry + 1);
+  }
+
+  // Check whether the snake eat itself, change direction if so
+  for (i = 0; i < enemySnakeBody.length; i++) {
+    if (
+      enemySnakeX + nextVelocity[0] === enemySnakeBody[i][0] &&
+      enemySnakeY + nextVelocity[1] === enemySnakeBody[i][1]
+    ) {
+      return enemyChangeDirection(retry + 1);
+    }
+  }
+  enemySnakeX += nextVelocity[0];
+  enemySnakeY += nextVelocity[1];
+
+  enemyVelocityX = nextVelocity[0];
+  enemyVelocityY = nextVelocity[1];
+};
+
+// This method spawns the enemy snake at the edge of the map
+const spawnEnemy = () => {
+  enemySnakeX = 30;
+  enemySnakeY = 30;
+  enemySnakeBody = [];
+  for (let i = 1; i <= snakeBody.length; i++) {
+    enemySnakeBody.push([enemySnakeX + i, enemySnakeY]);
+  }
+};
+
+// This method is the catch all for most enemy logic
+const enemySnakeLogic = () => {
+  updateEnemySnakeLocation();
+  enemyChangeDirection();
+  // function to move the enemy snake head by randomizing direction
+  // conditions: 3 directions to move, at corner there will be 2 if coordinate at 1 or 30, no collision with itself
+  if (enemySnakeX === foodX && enemySnakeY === foodY) {
+    // Add Body
+    enemySnakeBody.push([foodX, foodY]);
+    // Recreate Food
+    randomizedFood();
+  }
+  //Check whether the enemy snake and snake collide
+  if (snakeBody.length > enemySnakeBody.length) {
+    if (snakeX == enemySnakeX && snakeY == enemySnakeY) {
+      addScore(20);
+      spawnEnemy();
+    }
+
+    for (i = 0; i < enemySnakeBody.length; i++) {
+      if (snakeX == enemySnakeBody[i][0] && snakeY == enemySnakeBody[i][1]) {
+        addScore(20);
+        spawnEnemy();
+      }
+    }
+  }
 };
 
 // This method is the main event loop of the game
@@ -142,36 +246,36 @@ const initGame = () => {
   document.querySelector(".highScoreDisplay").textContent =
     "High Score: " + highScore;
   if (snakeX === foodX && snakeY === foodY) {
-    //TODO: After we eat, if score is more than X, we expand the map
-    // AKA: Change HTML Style to be bigger, also change gridSize
-    // Possible is that we want the map to expand evenly so we need to change the location of all the stuff inside
     eatFood();
+
+    if (score == enemyThreshold) {
+      spawnEnemy();
+    }
   }
 
   if (score > doorThreshold) {
     htmlMarkup += `<div class="door" style="grid-area: ${doorA_Y}/ ${doorA_X}"></div>`;
     htmlMarkup += `<div class="door" style="grid-area: ${doorB_Y}/ ${doorB_X}"></div>`;
-    // console.log(
-    //   snakeX,
-    //   snakeY,
-    //   "||",
-    //   doorA_X,
-    //   doorA_Y,
-    //   "||",
-    //   doorB_X,
-    //   doorB_Y,
-    //   snakeX == doorA_X && snakeY == doorA_Y
-    // );
+
+    // Snake enter door
     if (snakeX == doorA_X && snakeY == doorA_Y) {
       snakeX = doorB_X;
       snakeY = doorB_Y;
-      // console.log("hit door a");
     } else if (snakeX == doorB_X && snakeY == doorB_Y) {
       snakeX = doorA_X;
       snakeY = doorA_Y;
     }
     if (score % 5 == 0) {
       randomizedDoor();
+    }
+
+    // enemy enter door
+    if (enemySnakeX == doorA_X && enemySnakeY == doorA_Y) {
+      enemySnakeX = doorB_X;
+      enemySnakeY = doorB_Y;
+    } else if (enemySnakeX == doorB_X && enemySnakeY == doorB_Y) {
+      enemySnakeX = doorA_X;
+      enemySnakeY = doorA_Y;
     }
   }
 
@@ -203,15 +307,19 @@ const initGame = () => {
 
   htmlMarkup += `<div class="snakeHead" style="grid-area: ${snakeY}/ ${snakeX}"></div>`;
 
-  // TODO: if score more than enemyThreshold, move enemy snake (we init a position at the very beginning)
-  // we can use a randomize the direction the enemy moves at the start
-  // We can then add the code to move the enemy towards our snake always (can use the direction taht would bring the enemy head closer to any part of our snake)
-  // Check if either we or enemy touch each other body if so eat, we can add condition on size of snake; only bigger snake can eat small snakes
-  // We can also make it so that enemy can eat food too so it can get longer
+  enemySnakeLogic();
 
-  const enemySnake = () => {
-    let enemySnakeBody = `<div class="enemySnake" style="grid-area: 13/22,14/22,15/22,16/22"></div>`;
+  const enemySnakeHTML = () => {
+    htmlMarkup += `<div class="enemySnake" style="grid-area: ${enemySnakeY}/ ${enemySnakeX}"></div>`;
+
+    for (let i = 0; i < enemySnakeBody.length; i++) {
+      if (enemySnakeBody[i][0] > 30 || enemySnakeBody[i][1] > 30) {
+        break;
+      }
+      htmlMarkup += `<div class = "enemySnakeBody" style = "grid-area: ${enemySnakeBody[i][1]}/${enemySnakeBody[i][0]}"></div>`;
+    }
   };
+  enemySnakeHTML();
 
   if (gameOver) return handleGameOver();
   snakeGrid.innerHTML = htmlMarkup;
@@ -219,7 +327,6 @@ const initGame = () => {
 
 randomizedFood();
 randomizedDoor();
-// enemySnake();
 setIntervalId = setInterval(initGame, 100);
 
 document.addEventListener("keydown", changeDirection);
