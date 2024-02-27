@@ -109,10 +109,12 @@ const changeDirection = (e) => {
 
 // This method updates the high score
 const updateHighScore = () => {
-  highScore = score;
-  localStorage.setItem("highScore", highScore);
-  document.querySelector(".highScoreDisplay").textContent =
-    "High Score: " + highScore;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("highScore", highScore);
+    document.querySelector(".highScoreDisplay").textContent =
+      "High Score: " + highScore;
+  }
 };
 
 // This method updates the location of the snake
@@ -236,6 +238,9 @@ const enemySnakeLogic = () => {
 // This method is the main event loop of the game
 const initGame = () => {
   let htmlMarkup = `<div class="food" style="grid-area: ${foodY}/ ${foodX}"></div>`;
+
+  document.querySelector(".highScoreDisplay").textContent =
+    "High Score: " + highScore;
 
   if (snakeX === foodX && snakeY === foodY) {
     eatFood();
