@@ -1,5 +1,3 @@
-//TODO: Update README.md
-
 const snakeGrid = document.querySelector(".snakeGrid");
 
 const doorThreshold = 0;
@@ -94,7 +92,6 @@ const handleGameOver = () => {
 
 // This method handles event with the direction change of the head
 const changeDirection = (e) => {
-  // TODO: Currently this can run faster than the game loop so we can eat ourselves still
   if (e.key === "ArrowUp" && velocityY !== 1) {
     velocityX = 0;
     velocityY = -1;
@@ -214,8 +211,6 @@ const spawnEnemy = () => {
 const enemySnakeLogic = () => {
   updateEnemySnakeLocation();
   enemyChangeDirection();
-  // function to move the enemy snake head by randomizing direction
-  // conditions: 3 directions to move, at corner there will be 2 if coordinate at 1 or 30, no collision with itself
   if (enemySnakeX === foodX && enemySnakeY === foodY) {
     // Add Body
     enemySnakeBody.push([foodX, foodY]);
